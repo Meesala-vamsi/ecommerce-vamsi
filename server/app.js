@@ -38,7 +38,7 @@ app.use(
     })
 )
 const corsOptions = {
-    origin: 'https://master--vamsimees-ecommerce.netlify.app', // Replace with your frontend's origin
+    origin: 'https://vamsimees-ecommerce.netlify.app', // Replace with your frontend's origin
     credentials: true // This allows the session cookie to be sent back and forth
   };
   app.use(cors(corsOptions));
