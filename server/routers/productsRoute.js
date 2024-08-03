@@ -1,6 +1,6 @@
 const express = require("express")
 const authController = require('../Controllers/authController')
-const upload = require("../Storage/storage")
+const upload = require("../Storage/Storage")
 const productController = require("../Controllers/productController")
 
 const router = express.Router()
