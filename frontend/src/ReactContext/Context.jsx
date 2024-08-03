@@ -12,6 +12,8 @@ export const ContextProvider = ({ children }) => {
   const url = "https://ecommerce-vamsi.onrender.com";
   const navigate = useNavigate();
 
+  console.log(token)
+
   const productDetails = async () => {
     await axios.get(`${url}/products`, { withCredentials: true })
       .then((response) => {
