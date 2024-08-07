@@ -9,7 +9,7 @@ export const ContextProvider = ({ children }) => {
   const [getUser, setUser] = useState(null);
   const [token, setToken] = useState(Cookies.get("jwtToken" || ""));
   const [getProductsData, setProductsData] = useState([]);
-  const url = "http://localhost:3000";
+  const url = "https://ecommerce-vamsi.onrender.com";
 
   console.log(token)
 
