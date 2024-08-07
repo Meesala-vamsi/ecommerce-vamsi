@@ -9,12 +9,15 @@ import { toast } from "react-toastify";
 const Products = ()=>{
   const {getProductsData,url,getUser,setProductsData,a,productDetails,token} = useContext(ReactContext)
   console.log(getProductsData)
-  console.log(Cookies.get("connect.sid"))
+  console.log(Cookies.get("jwtToken"))
   console.log(getUser)
 
   const onClickDelete=async(id)=>{
-    if(getUser.role==="admin"){
-    await axios.delete(`${url}/products/${id}`,{withCredentials:true})
+    await axios.delete(`${url}/products/${id}`,{
+      headers:{
+        Authorization:`Bearer ${token}`
+      }
+    })
     .then((response)=>{
       console.log(response)
       if(response.status===200){
@@ -23,9 +26,9 @@ const Products = ()=>{
         toast.success("Product deleted successfully");
       }
     })
-  }else{
-    toast.error("You dont have access to perform this Action")
-  }
+    .catch((err)=>{
+      toast.error("You dont have access to perform this Action")
+    })
   }
   return(
     <div className="products-container">

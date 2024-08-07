@@ -9,18 +9,8 @@ router.route('/login')
       .post(UserController.loginUser)
 
 router.route("/user")
-      .get(UserController.getUser)
+      .get(UserController.contentPermission,UserController.getUser)
 
-// router.route("/updatePassword")
-//       .patch(UserController.contentPermission,UserController.passwordUpdate)
-
-// router.route('/forgotPassword')
-//       .post(UserController.forgotPassword)
-
-// router.route('/resetPassword/:token')
-//       .patch(UserController.resetPassword)
-// router.route('/updateUserDetails')
-//       .patch(UserController.contentPermission,UserController.updateUserDetails)
 
 
 

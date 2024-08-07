@@ -21,17 +21,23 @@ const Login = () => {
     });
   };
 
+  const addToken=(accessToken)=>{
+    setToken(accessToken)
+    Cookies.set("jwtToken",accessToken)
+    navigate("/")
+  }
+
 
   const onSubmitDetails = async (e) => {
     e.preventDefault();
 
     if(details.email && details.password){
-    await axios.post(`${url}/auth/v1/login`, details,{withCredentials:true})
+    await axios.post(`${url}/auth/v1/login`, details)
       .then((response) => {
         console.log(response)
-        if(response.data.login){
+        if(response.status===200){
           setUser(response.data)
-          navigate("/")
+          addToken(response.data.token)
         }
       }).catch((err) => {
         toast.error(err.response.data.message)

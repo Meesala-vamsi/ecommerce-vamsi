@@ -18,7 +18,7 @@ const Header = () => {
   };
 
   const onClickLogout=()=>{
-   const token = Cookies.remove("connect.sid")
+   const token = Cookies.remove("jwtToken")
    if(token===undefined){
     navigate("/login")
    }

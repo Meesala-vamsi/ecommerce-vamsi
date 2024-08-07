@@ -11,7 +11,7 @@ const AddProductPopup = ({ isOpen, onClose }) => {
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
   const [image, setImage] = useState(null);
-  const {productDetails,getUser} = useContext(ReactContext)
+  const {productDetails,getUser,token} = useContext(ReactContext)
   const [productdetails,setProductDetails] = useState({
     name:"",
     description:"",
@@ -37,21 +37,19 @@ const AddProductPopup = ({ isOpen, onClose }) => {
     formData.append("stock", stock);
     formData.append("image", image);
 
-    try {
-      if(getUser.role==="admin"){
-      await axios.post("http://localhost:3000/products", formData)
+      await axios.post("http://localhost:3000/products", formData,{
+        headers:{
+          Authorization:`Bearer ${token}`
+        }
+      })
       .then((res)=>{
         toast.success("Product Added Successfully")
         productDetails()
       })
-      onClose();  
-      }else{
+      .catch((err)=>{
         toast.error("You dont have access to perform this action.")
-        onClose()
-      }
-    } catch (error) {
-      console.error("Error adding product:", error);
-    }
+      })
+      onClose();  
   };
 
   if (!isOpen) return null;

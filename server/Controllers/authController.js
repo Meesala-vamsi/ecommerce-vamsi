@@ -6,7 +6,7 @@ const { createClient } = require("@supabase/supabase-js");
 const dotenv = require("dotenv");
 const Session = require("../Models/sessionModel");
 const { MongoDBStore } = require("connect-mongodb-session");
-const { ObjectId } = require("mongodb");
+const jwt = require("jsonwebtoken")
 
 dotenv.config({ path: "./.env" });
 
@@ -15,42 +15,26 @@ const supabase = createClient(
   process.env.SUPABASE_ANON_KEY
 );
 
-// exports.contentPermission = asyncErrorHandler(async (req, res, next) => {
-//   const authHeader = req.headers.authorization;
-//   let authToken;
-//   if (authHeader !== undefined) {
-//     authToken = authHeader.split(" ")[1];
-//   }
-//   if (authToken === undefined) {
-//     const error = new ErrorFeature("You are not Logged In!", 404);
-//     return next(error);
-//   }
-//   let { data, error } = await supabase.auth.getUser(authToken);
-//   if (error) {
-//     const error = new ErrorFeature("Invalid JWT Token", 401);
-//     return next(error);
-//   }
-//   const user = await User.find({supabaseId:data.id})
-//   req.user = data.user
-//   next()
-// });
 
-exports.restrict = async (user) => {
-  const userId =  new ObjectId(user.params.id)
-
-  const userData = await User.findById(user.params.id)
-  // if (req.user.user_metadata.role === "admin") {
-  //   next();
-  // } else {
-  //   const error = new ErrorFeature(
-  //     "You don't have access to perform this action.",
-  //     201
-  //   );
-  //   return next(error);
-  // }
-  console.log(userData)
-  
-};
+exports.contentPermission = asyncErrorHandler(async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  let authToken;
+  if (authHeader !== undefined) {
+    authToken = authHeader.split(" ")[1];
+  }
+  if (authToken === undefined) {
+    const error = new ErrorFeature("You are not Logged In!", 404);
+    return next(error);
+  }
+  let { data, error } = await supabase.auth.getUser(authToken);
+  if (error) {
+    const error = new ErrorFeature("Invalid JWT Token", 401);
+    return next(error);
+  }
+  const user = await User.find({supabaseId:data.id})
+  req.user = data.user
+  next()
+});
 
 exports.createUser = asyncErrorHandler(async (req, res) => {
   const { email, password, username, role } = req.body;
@@ -85,7 +69,6 @@ exports.createUser = asyncErrorHandler(async (req, res) => {
 
 exports.loginUser = asyncErrorHandler(async (req, res, next) => {
   const { email, password } = req.body;
-  // console.log(req.body)
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -97,24 +80,15 @@ exports.loginUser = asyncErrorHandler(async (req, res, next) => {
   const user = await User.findOne({ email }).select("+password");
   if(!user){
     return res.status(404).json({
-      login:false,
       message:"Invaid User.."
     })
   }
-  req.session.userId = user._id;
-  req.session.ipAddress = req.ip;
-  req.session.user = user;
-
-  await Session.create({
-    userId: user._id,
-    ipAddress: req.ip,
-    loginTime: new Date(),
-  });
   
-
+   const token = data.session.access_token
+  console.log(data.session)
   res.status(200).json({
     message:"User Logged In Successfully..",
-    login:true,
+    token,
     data:{
       user
     }
@@ -123,27 +97,9 @@ exports.loginUser = asyncErrorHandler(async (req, res, next) => {
 });
 
 
-exports.authMiddleware = asyncErrorHandler(async(req,res,next)=>{
-  const sessionToken = req.cookies['connect.sid'];
-  if (!sessionToken) {
-    return res.status(401).json({ message: 'Not authenticated' });
-  }
-  // Retrieve session from MongoDB
-  const session = await MongoDBStore.find({ sessionToken });
-  console.log(session)
-  if (!session) {
-    return res.status(401).json({ message: 'Session not found' });
-  }
-  const user = await User.findById(session.userId);
-  res.status(200).json({ user });
-})
-
 exports.getUser=asyncErrorHandler(async(req,res,next)=>{
-  if (!req.session.userId) {
-    return res.status(401).json({ error: 'Not authenticated' });
-  }
-
-  const user = await User.findById(req.session.userId);
+  console.log(req.user)
+  const user = await User.findOne({supabaseId:req.user.id});
   if (!user) {
     return res.status(404).json({ error: 'User not found',valid:false});
   }
@@ -158,3 +114,15 @@ exports.getUser=asyncErrorHandler(async(req,res,next)=>{
 })
 
 
+exports.restrict = async (req,res,next) => {
+  if (req.user.user_metadata.role === "admin") {
+    next();
+  } else {
+    const error = new ErrorFeature(
+      "You don't have access to perform this action.",
+      201
+    );
+    return next(error);
+  }
+  
+};

@@ -7,16 +7,20 @@ export const ReactContext = React.createContext();
 
 export const ContextProvider = ({ children }) => {
   const [getUser, setUser] = useState(null);
-  const [token, setToken] = useState(Cookies.get("connect.sid" || ""));
+  const [token, setToken] = useState(Cookies.get("jwtToken" || ""));
   const [getProductsData, setProductsData] = useState([]);
-  const url = "https://ecommerce-vamsi.onrender.com";
-  const navigate = useNavigate();
+  const url = "http://localhost:3000";
 
   console.log(token)
 
   const productDetails = async () => {
-    await axios.get(`${url}/products`, { withCredentials: true })
+    await axios.get(`${url}/products`,{
+      headers:{
+        Authorization:`Bearer ${token}`
+      }
+    })
       .then((response) => {
+        console.log(response)
         setProductsData(response.data.data.products);
       })
       .catch((err) => {
@@ -26,10 +30,14 @@ export const ContextProvider = ({ children }) => {
 
   const getUserData = async () => {
     if(token){
-    await axios.get(`${url}/auth/v1/user`, { withCredentials: true })
+    await axios.get(`${url}/auth/v1/user`,{
+      headers:{
+        Authorization:`Bearer ${token}`
+      }
+    })
       .then((response) => {
         setUser(response.data.data.user)
-        console.log(response.data.data.user)
+        console.log(response)
       })
       .catch((err) => {
         console.log(err);
@@ -38,9 +46,10 @@ export const ContextProvider = ({ children }) => {
   };
 
   useEffect(() => {
-
-    getUserData();
-    productDetails();
+    if(token){
+      getUserData();
+      productDetails();
+    }
     
   }, [token]);
 
